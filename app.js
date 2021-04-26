@@ -9,26 +9,29 @@ app.use(express.urlencoded({ extended: true }))
 app.use(middleware.logger)
 app.use(morgan('dev'))
 
-const uRoutes = require("./routes/users");
-app.use("/users", uRoutes);
+const cRoutes = require("./routes/companies/companies");
+app.use("/companies", cRoutes);
 
-app.use(function (req, res, next){
-    const err = new ExpressError("Not Found", 404);
-    return next(err);
+const iRoutes = require("./routes/invoices/invoices");
+app.use("/invoices", iRoutes);
+
+/** 404 handler */
+
+app.use(function(req, res, next) {
+  const err = new ExpressError("Not Found", 404);
+  return next(err);
 });
 
-app.use(function (err, req, res, next) {
-    // the default status is 500 Internal Server Error
-    let status = err.status || 500;
-  
-    // set the status and alert the user
-    return res.status(status).json({
-      error: {
-        message: err.message,
-        status: status
-      }
-    });
+/** general error handler */
+
+app.use((err, req, res, next) => {
+  res.status(err.status || 500);
+
+  return res.json({
+    error: err,
   });
+});
+
 
 app.get('/', (req, res, next)=>{
     return res.send("Works")
